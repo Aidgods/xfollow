@@ -20,7 +20,7 @@ module.exports = {
                     const duration = interaction.options.getString('duration');
                     const key = generateKey(interaction.user.id, duration);
                     saveDb(); // Save the updated db object to db.json
-                    if (interaction.user.id == "1041092390615793694") {
+                    if (interaction.user.id == "your owner account user id") {
                         await interaction.reply({ content: `Your key has been generated: ${key}`, ephemeral: true });
                     } else {
                         await interaction.reply('nuh uh', { ephemeral: true });
