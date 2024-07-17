@@ -1,10 +1,10 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { Authflow } = require('prismarine-auth');
+const { Authflow, Titles } = require('prismarine-auth');
 const axios = require('axios');
 const fs = require('fs');
 const { EmbedBuilder } = require('discord.js');
 const { ProxyAgent } = require('proxy-agent');
-const usernames = ['test1', 'test2','test3', 'test4', 'test5', 'test6', 'test7', 'test8','test9','test10', 'test11', 'test12', 'test13', 'test14', 'test15', 'test16'];
+const usernames = ['test1', 'test2','test3', 'test4', 'test5', 'test6', 'test7', 'test8','test9','test10', 'test11', 'test12', 'test13', 'test14', 'test15', 'test16', 'test17', 'test18', 'test19', 'test20', 'test21','test22', 'test23', 'test24','test25', 'test26', 'test27','test28', 'test29', 'test30', 'test31'];
 
 module.exports = {
     cooldown: 5,
@@ -30,7 +30,7 @@ module.exports = {
                 
                     const now = Date.now();
                     const timestamps = cooldowns.get(this.data.name);
-                    const cooldownAmount = this.cooldown * 1000;
+                    const cooldownAmount = this.cooldown * 3000;
                 
                     if (timestamps.has(interaction.user.id)) {
                         const expirationTime = timestamps.get(interaction.user.id) + cooldownAmount;
@@ -48,7 +48,11 @@ module.exports = {
                     for (let i = 0; i < usernames.length; i++) {
                         let userIdentifier = usernames[i];
                         let cacheDir = `./accounts/${userIdentifier}`; // Specify a unique cache directory for each user
-                        let flow = new Authflow(userIdentifier, cacheDir);
+                        let flow = new Authflow(userIdentifier, cacheDir, {
+  authTitle: Titles.MinecraftNintendoSwitch,
+  deviceType: 'Nintendo',
+  flow: 'live'
+});
                         authFlowInstances.push(flow);
                     }
             
@@ -68,12 +72,12 @@ module.exports = {
                         console.log(`User ${userId} has redeemed a key.`);
                     } else {
                         console.log(`User ${userId} has not redeemed a key.`);
-                        await interaction.reply("You need to redeem a key first.");
+                        await interaction.reply("You need to redeem a key first. https://gamerscore.mysellix.io/");
                         return;
                     }
             
                     Promise.all(authFlowInstances.map(flow => 
-                        flow.getXboxToken('http://xboxlive.com')
+                        flow.getXboxToken()
                             .catch(error => {
                                 console.error(error);
                                 // Handle the error appropriately here
@@ -90,23 +94,22 @@ module.exports = {
                         }
                         // Perform the asynchronous operations
                         for (let i = 0; i < tokens.length; i++) {
-                            const proxyAgent = new ProxyAgent(getRandomProxy());
+
                             const xbl = tokens[i];
-                            const profileUrl = `https://profile.xboxlive.com/users/gt(${gamertag})/profile/settings?settings=Gamertag`;
-                            const { data, status } = await axios.get(profileUrl, {
-                                headers: {
-                                    'Authorization': `XBL3.0 x=${xbl.userHash};${xbl.XSTSToken}`,
-                                    'x-xbl-contract-version': '2'
+const profileUrl = `https://profile.xboxlive.com/users/gt(${gamertag})/profile/settings?settings=Gamertag`;
+                    const { data, status } = await axios.get(profileUrl, {
+                        headers: {
+                            'Authorization': `XBL3.0 x=${xbl.userHash};${xbl.XSTSToken}`,
+                            'x-xbl-contract-version': '2'
+                        },
+                    });
+
+                    const xuid = data.profileUsers[0].id;
+                    const response1 = await axios.put(`https://social.xboxlive.com/users/me/people/xuid(${xuid})`, {}, {
+                        headers: {
+                            'authorization': `XBL3.0 x=${xbl.userHash};${xbl.XSTSToken}`,
                                 },
-                                httpsAgent: proxyAgent
-                            });
-            
-                            const xuid = data.profileUsers[0].id;
-                            const response1 = await axios.put(`https://social.xboxlive.com/users/me/people/xuid(${xuid})`, {}, {
-                                headers: {
-                                    'authorization': `XBL3.0 x=${xbl.userHash};${xbl.XSTSToken}`,
-                                },
-                                httpsAgent: proxyAgent
+                                
                             });
                         }
             
@@ -114,7 +117,7 @@ module.exports = {
                         const embed = new EmbedBuilder()
                         .setColor(0x0099FF)
                         .setTitle('Friend Added')
-                        .setDescription(`Number of Usernames: ${usernames.length}\nGamertag: ${gamertag}`)
+                        .setDescription(`Number of Bots: ${usernames.length}\nGamertag: ${gamertag}`)
                         .setTimestamp();
             
                         // Edit the deferred reply
@@ -122,7 +125,7 @@ module.exports = {
                     })
                     .catch((error) => {
                         console.error(error);
-                        if (error.response && error.response.status === 404) {
+                        if (error.response1 && error.response1.status === 404, 403) {
                             interaction.reply('Invalid gamertag. Please check and try again.');
                         } else {
                             interaction.reply('An error occurred while processing the command.');
